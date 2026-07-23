@@ -1,22 +1,24 @@
 use pyo3::prelude::*;
 
 #[pyfunction]
-fn encrypt_password(password: &str, _nonce: &str, _dek: &str) -> PyResult<String> {
-    // PyO3 automatically maps Python `str` to Rust `&str`
-    // Returning a String maps back to a Python `str`
-    Ok(format!("encrypted-{}", password))
+fn encrypt_password(password: &[u8], _nonce: &[u8], _dek: &[u8]) -> PyResult<Vec<u8>> {
+    // Return mock cipher bytes (e.g. b"encrypted-" + raw password bytes)
+    let mut mock_ciphertext = b"encrypted-".to_vec();
+    mock_ciphertext.extend_from_slice(password);
+    Ok(mock_ciphertext)
 }
 
 #[pyfunction]
-fn decrypt_password(encrypted_password: &str, _nonce: &str, _dek: &str) -> PyResult<String> {
-    Ok(encrypted_password.to_string())
+fn decrypt_password(encrypted_password: &[u8], _nonce: &[u8], _dek: &[u8]) -> PyResult<Vec<u8>> {
+    // Mock decrypt: just return the input bytes directly
+    Ok(encrypted_password.to_vec())
 }
 
 #[pyfunction]
-fn derive_keys(password: &str, _salt: &str) -> PyResult<(String, String)> {
-    // Using string hex representations as mock data
-    let mock_hash = "01".repeat(32);
-    let mock_kek = "02".repeat(32);
+fn derive_keys(password: &[u8], _salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)> {
+    // Return dummy 32-byte chunks for the verification hash and KEK
+    let mock_hash = vec![1u8; 32];
+    let mock_kek = vec![2u8; 32];
     Ok((mock_hash, mock_kek))
 }
 

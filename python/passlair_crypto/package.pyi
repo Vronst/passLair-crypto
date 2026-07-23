@@ -1,9 +1,9 @@
-def decrypt_password(encrypted_password: str, nonce: str, dek: str) -> str: ...
+def decrypt_password(encrypted_password: str, nonce: bytes, dek: str) -> str: ...
 """Decrypts a password using the provided nonce and dek.
 
 Args:
     encrypted_password (str): The encrypted password to decrypt.
-    nonce (str): The nonce used for encryption.
+    nonce (bytes): The nonce used for encryption.
     dek (str): The data encryption key used for decryption.
 
 Returns:
@@ -11,7 +11,7 @@ Returns:
 """
 
 
-def encrypt_password(password: str, nonce: str, dek: str) -> str: ...
+def encrypt_password(password: str, nonce: bytes, dek: str) -> str: ...
 """Encrypts a password using the provided nonce and dek.
 
 Nonce should be regenerated for each encryption operation.
@@ -26,7 +26,7 @@ Returns:
 """
 
 
-def derive_hash_and_keys(password: str, salt: str) -> tuple: ...
+def derive_hash_and_keys(password: str, salt: str) -> tuple[str, str]: ...
 """Derives a hash and keys from the provided password and salt.
 
 Args:
