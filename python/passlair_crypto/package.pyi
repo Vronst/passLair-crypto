@@ -28,7 +28,7 @@ def encrypt_password(password: bytearray, nonce: bytes, dek: bytearray) -> bytes
     ...
 
 
-def derive__keys(password: str, salt: str) -> tuple[bytes, bytes]:
+def derive_keys(password: str, salt: str) -> tuple[bytes, bytes]:
     """Derives a hash and keys from the provided password and salt.
 
     Args:
