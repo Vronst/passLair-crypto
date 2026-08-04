@@ -34,12 +34,18 @@ jobs:
     uses: Vronst/workflows/.github/workflows/test.yml@custom
     with:
       runner_type: "local"
-      test_command: "uv run --group test pytest && cargo test"
+      test_command: |
+        uv run --group test pytest tests/
+        cmake -S . -B build-cpp-tests -DPASSLAIR_CRYPTO_BUILD_TESTS=ON
+        cmake --build build-cpp-tests -j
+        if find tests/cpp -maxdepth 1 -name '*.cpp' 2>/dev/null | grep -q .; then
+          ctest --test-dir build-cpp-tests --output-on-failure
+        else
+          echo "No C++ unit tests yet in tests/cpp/ -- skipping ctest"
+        fi
       setup_command: |
         pip install uv
         uv sync
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
   # 4. Auto PR Creation: Runs ONLY on pushes to 'stage' after testing/linting pass successfully
   auto-pr-generation:

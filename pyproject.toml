@@ -4,15 +4,16 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "maturin>=1.14.1",
-]
 
 [build-system]
-requires = ["maturin>=1.0,<2.0"]
-build-backend = "maturin"
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13"]
+build-backend = "scikit_build_core.build"
 
-[tool.maturin]
-binding = "pyo3"
-python-source = "python"
-module-name = "passlair_crypto.package"
+[tool.scikit-build]
+wheel.packages = ["python/passlair_crypto"]
+cmake.build-type = "Release"
+
+[dependency-groups]
+test = [
+    "pytest>=9.0.3",
+]
