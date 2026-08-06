@@ -1,17 +1,31 @@
+mod helpers;
+
+use chacha20poly1305::{
+    ChaCha20Poly1305,
+    aead::{Aead, KeyInit},
+};
+use helpers::{get_key, get_nonce, py_err};
 use pyo3::prelude::*;
 
 #[pyfunction]
-fn encrypt_password(password: &[u8], _nonce: &[u8], _dek: &[u8]) -> PyResult<Vec<u8>> {
-    // Return mock cipher bytes (e.g. b"encrypted-" + raw password bytes)
-    let mut mock_ciphertext = b"encrypted-".to_vec();
-    mock_ciphertext.extend_from_slice(password);
-    Ok(mock_ciphertext)
+fn encrypt_password(password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u8>> {
+    let key = get_key(dek)?;
+    let cipher = ChaCha20Poly1305::new(&key);
+    let nonce = get_nonce(nonce)?;
+    cipher
+        .encrypt(&nonce, password)
+        .map_err(py_err("Encryption failed."))
 }
 
 #[pyfunction]
-fn decrypt_password(encrypted_password: &[u8], _nonce: &[u8], _dek: &[u8]) -> PyResult<Vec<u8>> {
-    // Mock decrypt: just return the input bytes directly
-    Ok(encrypted_password.to_vec())
+fn decrypt_password(encrypted_password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u8>> {
+    let key = get_key(dek)?;
+    let cipher = ChaCha20Poly1305::new(&key);
+    let nonce = get_nonce(nonce)?;
+
+    cipher
+        .decrypt(&nonce, encrypted_password.as_ref())
+        .map_err(py_err("Decryption failed."))
 }
 
 #[pyfunction]

@@ -27,33 +27,35 @@ fn derive_keys(password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)>
 
 ## 1. Tooling / getting oriented
 
-- [ ] Build with `maturin develop` (via `uv run maturin develop` — pyo3
+- [x] Build with `maturin develop` (via `uv run maturin develop` — pyo3
       projects use maturin, not plain `cargo build`, to produce the `.so`
       Python imports). Confirm this still works before touching anything.
-- [ ] `cargo test` for the Rust-side unit tests you'll add — these don't need
+- [x] `cargo test` for the Rust-side unit tests you'll add — these don't need
       Python/maturin at all, just `cargo test` in the crate root.
-- [ ] If you're new to Rust: skim [the Rust Book](https://doc.rust-lang.org/book/),
+- [x] If you're new to Rust: skim [the Rust Book](https://doc.rust-lang.org/book/),
       ch. 9 (`Result`/error handling) and ch. 10 (traits) are the two most
       relevant chapters here. You mostly won't need lifetimes/generics beyond
       what pyo3's macros already handle for you.
-- [ ] Skim pyo3's own guide on [functions](https://pyo3.rs/latest/function.html)
+- [x] Skim pyo3's own guide on [functions](https://pyo3.rs/latest/function.html)
       and [error handling](https://pyo3.rs/latest/exception.html) — you'll
       want `PyErr`/`PyValueError` for the `Err(...)` cases below.
+
+--- so pyo3 will automatically handle Err() ---
 
 ## 2. AEAD encryption — `encrypt_password` / `decrypt_password`
 
 You need an authenticated cipher (confidentiality + tamper detection), keyed
 by the 32-byte DEK, using the given 12-byte nonce.
 
-- [ ] Add a RustCrypto AEAD crate: `cargo add aes-gcm` (AES-256-GCM) is the
+- [x] Add a RustCrypto AEAD crate: `cargo add aes-gcm` (AES-256-GCM) is the
       more "boring/standard" choice; `cargo add chacha20poly1305` works
       identically at the API level and doesn't need AES-NI hardware support.
       Either is fine — same 12-byte nonce, same 32-byte key, same API shape
       (`Aes256Gcm` vs `ChaCha20Poly1305`).
-- [ ] API shape to look for: `Key::<Aes256Gcm>::from_slice(dek)`,
+- [x] API shape to look for: `Key::<Aes256Gcm>::from_slice(dek)`,
       `Nonce::from_slice(nonce)`, then `.encrypt(nonce, plaintext)` /
       `.decrypt(nonce, ciphertext)` — both return `Result<Vec<u8>, aes_gcm::Error>`.
-- [ ] Map that `Result`'s `Err` to `PyResult`'s `Err` with
+- [x] Map that `Result`'s `Err` to `PyResult`'s `Err` with
       `.map_err(|_| PyValueError::new_err("decryption failed"))` — don't leak
       the underlying crypto error details in the message (standard practice:
       auth failures shouldn't hint at *why* they failed).
