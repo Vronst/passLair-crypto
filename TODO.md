@@ -59,9 +59,9 @@ by the 32-byte DEK, using the given 12-byte nonce.
       `.map_err(|_| PyValueError::new_err("decryption failed"))` — don't leak
       the underlying crypto error details in the message (standard practice:
       auth failures shouldn't hint at *why* they failed).
-- [ ] Note AES-GCM/ChaCha20-Poly1305 ciphertext already includes the auth tag
+- [x] Note AES-GCM/ChaCha20-Poly1305 ciphertext already includes the auth tag
       appended — you don't manage that separately, the crate does it.
-- [ ] Write a round-trip test (encrypt then decrypt gives back the original)
+- [x] Write a round-trip test (encrypt then decrypt gives back the original)
       and a tamper test (flip a byte in the ciphertext, decrypt must `Err`,
       not silently return garbage).
 

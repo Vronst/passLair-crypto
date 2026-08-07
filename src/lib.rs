@@ -1,4 +1,4 @@
-mod helpers;
+pub mod helpers;
 
 use chacha20poly1305::{
     ChaCha20Poly1305,
@@ -8,7 +8,7 @@ use helpers::{get_key, get_nonce, py_err};
 use pyo3::prelude::*;
 
 #[pyfunction]
-fn encrypt_password(password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u8>> {
+pub fn encrypt_password(password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u8>> {
     let key = get_key(dek)?;
     let cipher = ChaCha20Poly1305::new(&key);
     let nonce = get_nonce(nonce)?;
@@ -18,7 +18,7 @@ fn encrypt_password(password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u
 }
 
 #[pyfunction]
-fn decrypt_password(encrypted_password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u8>> {
+pub fn decrypt_password(encrypted_password: &[u8], nonce: &[u8], dek: &[u8]) -> PyResult<Vec<u8>> {
     let key = get_key(dek)?;
     let cipher = ChaCha20Poly1305::new(&key);
     let nonce = get_nonce(nonce)?;
@@ -29,7 +29,7 @@ fn decrypt_password(encrypted_password: &[u8], nonce: &[u8], dek: &[u8]) -> PyRe
 }
 
 #[pyfunction]
-fn derive_keys(password: &[u8], _salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)> {
+pub fn derive_keys(password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)> {
     // Return dummy 32-byte chunks for the verification hash and KEK
     let mock_hash = vec![1u8; 32];
     let mock_kek = vec![2u8; 32];
