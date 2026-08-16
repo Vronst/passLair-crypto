@@ -1,11 +1,8 @@
 pub mod helpers;
 
-use argon2::{
-    Argon2, Params,
-    password_hash::{
-        Salt, SaltString,
-        rand_core::{OsRng, RngCore},
-    },
+use argon2::password_hash::{
+    Salt, SaltString,
+    rand_core::{OsRng, RngCore},
 };
 use chacha20poly1305::{
     ChaCha20Poly1305, Nonce,
@@ -55,7 +52,7 @@ pub fn derive_keys(password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)>
 pub fn derive_new_keys(password: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>, Vec<u8>)> {
     // Basically raw implementation of
     // SaltString::generate(&mut OsRng)
-    // but works as .to_string().into_bytes();
+    // but in u8 format.
     let mut salt = [0u8; Salt::RECOMMENDED_LENGTH];
     OsRng.fill_bytes(&mut salt);
     let (hash, key) = derive_keys(password, &salt)?;
