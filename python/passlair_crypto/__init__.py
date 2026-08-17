@@ -1,3 +1,13 @@
-from .package import decrypt_password, derive_keys, encrypt_password  # type: ignore
+from .package import (  # type: ignore
+    decrypt_password,
+    derive_keys,
+    derive_new_keys,
+    encrypt_password,
+)
 
-__all__ = ["encrypt_password", "decrypt_password", "derive_keys"]
+__all__ = [
+    "encrypt_password",
+    "decrypt_password",
+    "derive_keys",
+    "derive_new_keys",
+]
