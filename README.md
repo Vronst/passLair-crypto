@@ -38,7 +38,7 @@ Requires Python >= 3.14 (see `pyproject.toml`). The built package is importable 
 
 ### As a Rust crate
 
-Not published; depend on it by path or git from within the workspace:
+Not published; depend on it by path or Git from within the workspace:
 
 ```toml
 [dependencies]
@@ -93,12 +93,25 @@ assert_eq!(plaintext, b"my-stored-secret");
 
 ## API
 
-| Function | Signature | Description |
-|---|---|---|
-| `derive_new_keys` | `(password: bytes) -> (salt, hash, key)` | Generates a fresh random salt and derives `hash`/`key` from `password`. Use for registration or password changes; persist `salt` and `hash`. |
-| `derive_keys` | `(password: bytes, salt: bytes) -> (hash, key)` | Re-derives `hash`/`key` from `password` and a previously stored `salt`. Use for login/verification. `salt` must be exactly 16 bytes. |
-| `encrypt_password` | `(password: bytes, key: bytes) -> (ciphertext, nonce)` | Encrypts `password` with ChaCha20-Poly1305 under `key`, generating a random nonce internally. `key` must be exactly 32 bytes. |
-| `decrypt_password` | `(ciphertext: bytes, nonce: bytes, key: bytes) -> plaintext` | Decrypts `ciphertext` using `nonce` and `key`. `key` must be 32 bytes, `nonce` 12 bytes. |
+### `derive_new_keys(password: bytes) -> (salt, hash, key)`
+
+Generates a fresh random salt and derives `hash`/`key` from `password`. Use for
+registration or password changes; persist `salt` and `hash`.
+
+### `derive_keys(password: bytes, salt: bytes) -> (hash, key)`
+
+Re-derives `hash`/`key` from `password` and a previously stored `salt`. Use for
+login/verification. `salt` must be exactly 16 bytes.
+
+### `encrypt_password(password: bytes, key: bytes) -> (ciphertext, nonce)`
+
+Encrypts `password` with ChaCha20-Poly1305 under `key`, generating a random nonce
+internally. `key` must be exactly 32 bytes.
+
+### `decrypt_password(ciphertext: bytes, nonce: bytes, key: bytes) -> plaintext`
+
+Decrypts `ciphertext` using `nonce` and `key`. `key` must be 32 bytes, `nonce` 12
+bytes.
 
 All four raise `ValueError` (Python) / return `Err` (Rust) on invalid input lengths or
 on cryptographic failure (e.g. tampered ciphertext, wrong key/nonce) — see the doc
