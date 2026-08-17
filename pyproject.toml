@@ -1,7 +1,7 @@
 [project]
 name = "passlair-crypto"
 version = "0.1.0"
-description = "Add your description here"
+description = "Library for python, that allows hashing and encryption of passwords."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
