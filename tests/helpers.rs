@@ -38,33 +38,33 @@ mod negative {
     #[test]
     fn get_nonce_declines_a_non_12_bytes_slice() {
         let bytes = [0u8; 24];
-        get_nonce(&bytes).expect_err("Value declined.");
+        get_nonce(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 11];
-        get_nonce(&bytes).expect_err("Value declined.");
+        get_nonce(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 0];
-        get_nonce(&bytes).expect_err("Value declined.");
+        get_nonce(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 1];
-        get_nonce(&bytes).expect_err("Value declined.");
+        get_nonce(&bytes).expect_err(&format!("Value {bytes:?} declined."));
     }
 
     #[test]
     fn get_key_declines_a_non_32_byte_slice() {
         let bytes = [0u8; 0];
-        get_key(&bytes).expect_err("Value declined");
+        get_key(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 12];
-        get_key(&bytes).expect_err("Value declined");
+        get_key(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 24];
-        get_key(&bytes).expect_err("Value declined");
+        get_key(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 44];
-        get_key(&bytes).expect_err("Value declined");
+        get_key(&bytes).expect_err(&format!("Value {bytes:?} declined."));
 
         let bytes = [0u8; 64];
-        get_key(&bytes).expect_err("Value declined");
+        get_key(&bytes).expect_err(&format!("Value {bytes:?} declined."));
     }
 }
