@@ -40,10 +40,53 @@ mod positive {
     }
 
     #[test]
+    fn derive_keys_output_shape() {
+        let password = [0u8; 64];
+        let salt = [0u8; Salt::RECOMMENDED_LENGTH];
+        let (hash, key) = derive_keys(&password, &salt).unwrap();
+
+        assert_eq!(key.len(), 32, "key should be 32 bytes");
+
+        let hash = String::from_utf8(hash).expect("hash should be valid UTF-8");
+        assert!(
+            hash.starts_with("$argon2id$"),
+            "hash should be a PHC-formatted Argon2id string, got: {hash}"
+        );
+    }
+
+    #[test]
     fn full_integration() {
         let password = [0u8; 64];
         let (salt, hash, key) = derive_new_keys(&password).unwrap();
-        // TODO: encrypt/decrypt with salt/hash/key and try again with derive_keys
+        let value = [1u8; 64];
+        let (encrypted, nonce) = encrypt_password(&value, &key).unwrap();
+        let decrypted = decrypt_password(&encrypted, &nonce, &key).unwrap();
+
+        assert_eq!(
+            decrypted, value,
+            "decrypted value should match original value"
+        );
+
+        let (second_hash, second_key) = derive_keys(&password, &salt).unwrap();
+        let (second_encrypted, second_nonce) = encrypt_password(&value, &second_key).unwrap();
+
+        assert_ne!(
+            encrypted, second_encrypted,
+            "encrypted value should not match second encrypted value"
+        );
+        assert_eq!(hash, second_hash, "hash should match second hash");
+        assert_eq!(second_key, key, "key should match second key");
+
+        let second_decrypted =
+            decrypt_password(&second_encrypted, &second_nonce, &second_key).unwrap();
+        assert_eq!(
+            second_decrypted, value,
+            "decrypted value should match original value"
+        );
+        assert_eq!(
+            second_decrypted, decrypted,
+            "decrypted value should match first decrypted value"
+        );
     }
 }
 

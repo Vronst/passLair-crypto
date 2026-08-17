@@ -12,14 +12,6 @@ mod positive {
     }
 
     #[test]
-    fn get_key_accepts_a_12_byte_slice() {
-        let bytes = [0u8; 32];
-        let key = get_key(&bytes).expect("a 32-bytes slice should produce a valid Key.");
-
-        assert_eq!(key.as_slice(), &bytes);
-    }
-
-    #[test]
     fn get_key_accepts_a_32_byte_slice() {
         let bytes = [0u8; 32];
         let key = get_key(&bytes).expect("a 32-bytes slice should produce a valid Key.");
@@ -32,19 +24,13 @@ mod negative {
     use super::*;
 
     #[test]
-    fn get_key_declines_31_byte_slice() {
+    fn get_key_declines_wrong_size_slice() {
         let bytes = [0u8; 31];
         get_key(&bytes).expect_err("a 31-bytes slice should produce err");
-    }
 
-    #[test]
-    fn get_key_declines_34_byte_slice() {
         let bytes = [0u8; 33];
         get_key(&bytes).expect_err("a 33-bytes slice should produce err");
-    }
 
-    #[test]
-    fn get_key_declines_100_byte_slice() {
         let bytes = [0u8; 100];
         get_key(&bytes).expect_err("a 100-bytes slice should produce err");
     }

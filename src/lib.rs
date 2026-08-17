@@ -102,5 +102,6 @@ fn package(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(encrypt_password, m)?)?;
     m.add_function(wrap_pyfunction!(decrypt_password, m)?)?;
     m.add_function(wrap_pyfunction!(derive_keys, m)?)?;
+    m.add_function(wrap_pyfunction!(derive_new_keys, m)?)?;
     Ok(())
 }

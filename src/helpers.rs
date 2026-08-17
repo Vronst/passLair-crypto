@@ -1,7 +1,6 @@
 //! Internal helpers shared by the public `#[pyfunction]`s in `lib.rs`: input
 //! validation, error mapping, and pinned Argon2 configuration.
 
-use argon2::MAX_PWD_LEN;
 use argon2::{Argon2, Params, PasswordHasher, password_hash::SaltString};
 use chacha20poly1305::{ChaCha20Poly1305, Nonce, aead::Key};
 use pyo3::{PyErr, PyResult, exceptions::PyValueError};
@@ -49,10 +48,6 @@ pub fn derive_hash_and_key(
     password: &[u8],
     salt: &SaltString,
 ) -> PyResult<(Vec<u8>, Vec<u8>)> {
-    if password.len() > MAX_PWD_LEN {
-        return Err(PyValueError::new_err("Password too long."));
-    }
-
     if password.len() < 1 {
         return Err(PyValueError::new_err("Password too short."));
     }
