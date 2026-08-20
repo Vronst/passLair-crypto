@@ -16,3 +16,12 @@ build-backend = "maturin"
 binding = "pyo3"
 python-source = "python"
 module-name = "passlair_crypto.package"
+
+[tool.basedpyright]
+include = ["python"]
+pythonVersion = "3.14"
+pythonPlatform = "All"
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "strict"
+reportUnnecessaryTypeIgnoreComment = "warning"
