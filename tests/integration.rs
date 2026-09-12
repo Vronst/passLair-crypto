@@ -11,6 +11,18 @@ mod positive {
 
     use super::*;
 
+    /// Derives hash/key for `password` under a fixed all-zero salt of the
+    /// recommended length, returning the salt alongside so callers can
+    /// re-derive with the same salt.
+    fn derive_with_default_salt(
+        py: Python<'_>,
+        password: &[u8],
+    ) -> ([u8; Salt::RECOMMENDED_LENGTH], Vec<u8>, Vec<u8>) {
+        let salt = [0u8; Salt::RECOMMENDED_LENGTH];
+        let (hash, key) = derive_keys(py, password, &salt).unwrap();
+        (salt, hash, key)
+    }
+
     #[test]
     fn encryption_decryption() {
         let (encrypted_password, nonce) = encrypt_password(&BYTES, &DEK).unwrap();
@@ -35,8 +47,7 @@ mod positive {
     fn derive_keys_same_output() {
         Python::attach(|py| {
             let password = [0u8; 64];
-            let salt = [0u8; Salt::RECOMMENDED_LENGTH];
-            let (hash, key) = derive_keys(py, &password, &salt).unwrap();
+            let (salt, hash, key) = derive_with_default_salt(py, &password);
             let (second_hash, second_key) = derive_keys(py, &password, &salt).unwrap();
 
             assert_eq!(hash, second_hash);
@@ -48,8 +59,7 @@ mod positive {
     fn derive_keys_output_shape() {
         Python::attach(|py| {
             let password = [0u8; 64];
-            let salt = [0u8; Salt::RECOMMENDED_LENGTH];
-            let (hash, key) = derive_keys(py, &password, &salt).unwrap();
+            let (_, hash, key) = derive_with_default_salt(py, &password);
 
             assert_eq!(key.len(), 32, "key should be 32 bytes");
 
