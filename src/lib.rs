@@ -66,7 +66,7 @@ pub fn decrypt_password(encrypted_password: &[u8], nonce: &[u8], dek: &[u8]) -> 
 /// # Errors
 /// Raises `ValueError` if `salt` is the wrong length, or if hashing fails.
 #[pyfunction]
-pub fn derive_keys(password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)> {
+pub fn derive_keys(py: Python<'_>, password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)> {
     if salt.len() != Salt::RECOMMENDED_LENGTH {
         return Err(PyValueError::new_err("Salt size is wrong."));
     }
@@ -74,7 +74,12 @@ pub fn derive_keys(password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)>
     let salt = SaltString::encode_b64(salt).map_err(py_err("Encoding salt failed."))?;
     // let argon2 = Argon2::default();
     let argon2 = build_argon2()?;
-    let (hash, key) = derive_hash_and_key(&argon2, &password, &salt)?;
+    // Argon2id is deliberately slow/memory-hard, and everything in
+    // derive_hash_and_key operates on plain Rust values (no Python object
+    // touched), so it's safe to release the GIL for the duration of the
+    // hash -- without this, the call blocks every other Python thread
+    // (including an asyncio event loop) for as long as hashing takes.
+    let (hash, key) = py.detach(|| derive_hash_and_key(&argon2, password, &salt))?;
     Ok((hash, key.to_vec()))
 }
 
@@ -87,13 +92,13 @@ pub fn derive_keys(password: &[u8], salt: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>)>
 /// # Errors
 /// Raises `ValueError` under the same conditions as [`derive_keys`].
 #[pyfunction]
-pub fn derive_new_keys(password: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>, Vec<u8>)> {
+pub fn derive_new_keys(py: Python<'_>, password: &[u8]) -> PyResult<(Vec<u8>, Vec<u8>, Vec<u8>)> {
     // Basically raw implementation of
     // SaltString::generate(&mut OsRng)
     // but in u8 format.
     let mut salt = [0u8; Salt::RECOMMENDED_LENGTH];
     OsRng.fill_bytes(&mut salt);
-    let (hash, key) = derive_keys(password, &salt)?;
+    let (hash, key) = derive_keys(py, password, &salt)?;
     Ok((salt.to_vec(), hash, key.to_vec()))
 }
 
