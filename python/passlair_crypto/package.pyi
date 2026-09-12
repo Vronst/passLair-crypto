@@ -11,7 +11,6 @@ def decrypt_password(encrypted_password: bytes, nonce: bytes, dek: bytes) -> byt
     """
     ...
 
-
 def encrypt_password(password: bytes, dek: bytes) -> tuple[bytes, bytes]:
     """Encrypts a password under dek, generating a fresh nonce internally.
 
@@ -24,7 +23,6 @@ def encrypt_password(password: bytes, dek: bytes) -> tuple[bytes, bytes]:
         ciphertext — it's required to decrypt it later.
     """
     ...
-
 
 def derive_keys(password: bytes, salt: bytes) -> tuple[bytes, bytes]:
     """Derives a hash and kek from a password and an existing salt.
@@ -40,7 +38,6 @@ def derive_keys(password: bytes, salt: bytes) -> tuple[bytes, bytes]:
         tuple: (hash, kek).
     """
     ...
-
 
 def derive_new_keys(password: bytes) -> tuple[bytes, bytes, bytes]:
     """Derives a hash and kek from a password, generating a fresh salt internally.

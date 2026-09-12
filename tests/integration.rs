@@ -1,4 +1,5 @@
 use passlair_crypto::{decrypt_password, derive_keys, derive_new_keys, encrypt_password};
+use pyo3::Python;
 
 const BYTES: [u8; 64] = [0u8; 64];
 const NONCE: [u8; 12] = [0u8; 12];
@@ -20,73 +21,81 @@ mod positive {
 
     #[test]
     fn derive_new_keys_and_check_with_derive_keys() {
-        let password = [0u8; 64];
-        let (salt, hash, key) = derive_new_keys(&password).unwrap();
-        let (second_hash, second_key) = derive_keys(&password, &salt).unwrap();
+        Python::attach(|py| {
+            let password = [0u8; 64];
+            let (salt, hash, key) = derive_new_keys(py, &password).unwrap();
+            let (second_hash, second_key) = derive_keys(py, &password, &salt).unwrap();
 
-        assert_eq!(hash, second_hash);
-        assert_eq!(key, second_key);
+            assert_eq!(hash, second_hash);
+            assert_eq!(key, second_key);
+        });
     }
 
     #[test]
     fn derive_keys_same_output() {
-        let password = [0u8; 64];
-        let salt = [0u8; Salt::RECOMMENDED_LENGTH];
-        let (hash, key) = derive_keys(&password, &salt).unwrap();
-        let (second_hash, second_key) = derive_keys(&password, &salt).unwrap();
+        Python::attach(|py| {
+            let password = [0u8; 64];
+            let salt = [0u8; Salt::RECOMMENDED_LENGTH];
+            let (hash, key) = derive_keys(py, &password, &salt).unwrap();
+            let (second_hash, second_key) = derive_keys(py, &password, &salt).unwrap();
 
-        assert_eq!(hash, second_hash);
-        assert_eq!(key, second_key);
+            assert_eq!(hash, second_hash);
+            assert_eq!(key, second_key);
+        });
     }
 
     #[test]
     fn derive_keys_output_shape() {
-        let password = [0u8; 64];
-        let salt = [0u8; Salt::RECOMMENDED_LENGTH];
-        let (hash, key) = derive_keys(&password, &salt).unwrap();
+        Python::attach(|py| {
+            let password = [0u8; 64];
+            let salt = [0u8; Salt::RECOMMENDED_LENGTH];
+            let (hash, key) = derive_keys(py, &password, &salt).unwrap();
 
-        assert_eq!(key.len(), 32, "key should be 32 bytes");
+            assert_eq!(key.len(), 32, "key should be 32 bytes");
 
-        let hash = String::from_utf8(hash).expect("hash should be valid UTF-8");
-        assert!(
-            hash.starts_with("$argon2id$"),
-            "hash should be a PHC-formatted Argon2id string, got: {hash}"
-        );
+            let hash = String::from_utf8(hash).expect("hash should be valid UTF-8");
+            assert!(
+                hash.starts_with("$argon2id$"),
+                "hash should be a PHC-formatted Argon2id string, got: {hash}"
+            );
+        });
     }
 
     #[test]
     fn full_integration() {
-        let password = [0u8; 64];
-        let (salt, hash, key) = derive_new_keys(&password).unwrap();
-        let value = [1u8; 64];
-        let (encrypted, nonce) = encrypt_password(&value, &key).unwrap();
-        let decrypted = decrypt_password(&encrypted, &nonce, &key).unwrap();
+        Python::attach(|py| {
+            let password = [0u8; 64];
+            let (salt, hash, key) = derive_new_keys(py, &password).unwrap();
+            let value = [1u8; 64];
+            let (encrypted, nonce) = encrypt_password(&value, &key).unwrap();
+            let decrypted = decrypt_password(&encrypted, &nonce, &key).unwrap();
 
-        assert_eq!(
-            decrypted, value,
-            "decrypted value should match original value"
-        );
+            assert_eq!(
+                decrypted, value,
+                "decrypted value should match original value"
+            );
 
-        let (second_hash, second_key) = derive_keys(&password, &salt).unwrap();
-        let (second_encrypted, second_nonce) = encrypt_password(&value, &second_key).unwrap();
+            let (second_hash, second_key) = derive_keys(py, &password, &salt).unwrap();
+            let (second_encrypted, second_nonce) = encrypt_password(&value, &second_key).unwrap();
 
-        assert_ne!(
-            encrypted, second_encrypted,
-            "encrypted value should not match second encrypted value"
-        );
-        assert_eq!(hash, second_hash, "hash should match second hash");
-        assert_eq!(second_key, key, "key should match second key");
+            assert_ne!(
+                encrypted, second_encrypted,
+                "encrypted value should not match second encrypted value"
+            );
+            assert_eq!(hash, second_hash, "hash should match second hash");
+            assert_eq!(second_key, key, "key should match second key");
 
-        let second_decrypted =
-            decrypt_password(&second_encrypted, &second_nonce, &second_key).unwrap();
-        assert_eq!(
-            second_decrypted, value,
-            "decrypted value should match original value"
-        );
-        assert_eq!(
-            second_decrypted, decrypted,
-            "decrypted value should match first decrypted value"
-        );
+            let second_decrypted =
+                decrypt_password(&second_encrypted, &second_nonce, &second_key).unwrap();
+            assert_eq!(
+                second_decrypted, value,
+                "decrypted value should match original value"
+            );
+            assert_eq!(
+                second_decrypted, decrypted,
+                "decrypted value should match first decrypted value"
+            );
+        });
     }
 }
 
@@ -146,72 +155,82 @@ mod negative {
 
     #[test]
     fn derive_new_keys_and_check_with_derive_keys() {
-        let password = [0u8; 64];
-        let corrupted_salt = [0u8; Salt::RECOMMENDED_LENGTH];
-        let (_, hash, key) = derive_new_keys(&password).unwrap();
-        let (second_hash, second_key) = derive_keys(&password, &corrupted_salt).unwrap();
+        Python::attach(|py| {
+            let password = [0u8; 64];
+            let corrupted_salt = [0u8; Salt::RECOMMENDED_LENGTH];
+            let (_, hash, key) = derive_new_keys(py, &password).unwrap();
+            let (second_hash, second_key) = derive_keys(py, &password, &corrupted_salt).unwrap();
 
-        assert_ne!(hash, second_hash);
-        assert_ne!(key, second_key);
+            assert_ne!(hash, second_hash);
+            assert_ne!(key, second_key);
+        });
     }
 
     #[test]
     fn derive_new_keys_wrong_salt() {
-        let password = [0u8; 64];
-        let corrupted_salt = [0u8; 100];
+        Python::attach(|py| {
+            let password = [0u8; 64];
+            let corrupted_salt = [0u8; 100];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too long");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too long");
 
-        let corrupted_salt = [0u8; 1];
+            let corrupted_salt = [0u8; 1];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too short");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too short");
 
-        let corrupted_salt = [0u8; 32];
+            let corrupted_salt = [0u8; 32];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too short 2");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too short 2");
 
-        let corrupted_salt = [0u8; 63];
+            let corrupted_salt = [0u8; 63];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too short 3");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too short 3");
 
-        let corrupted_salt = [0u8; 65];
+            let corrupted_salt = [0u8; 65];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too long 2");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too long 2");
 
-        let corrupted_salt = [0u8; 15];
+            let corrupted_salt = [0u8; 15];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too short by one");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too short by one");
 
-        let corrupted_salt = [0u8; 17];
+            let corrupted_salt = [0u8; 17];
 
-        derive_keys(&password, &corrupted_salt).expect_err("Salt is too long by one");
+            derive_keys(py, &password, &corrupted_salt).expect_err("Salt is too long by one");
+        });
     }
 
     #[test]
     fn derive_keys_different_passwords_same_salt() {
-        let password_a = [0u8; 64];
-        let password_b = [1u8; 64];
-        let salt = [0u8; Salt::RECOMMENDED_LENGTH];
+        Python::attach(|py| {
+            let password_a = [0u8; 64];
+            let password_b = [1u8; 64];
+            let salt = [0u8; Salt::RECOMMENDED_LENGTH];
 
-        let (hash_a, key_a) = derive_keys(&password_a, &salt).unwrap();
-        let (hash_b, key_b) = derive_keys(&password_b, &salt).unwrap();
+            let (hash_a, key_a) = derive_keys(py, &password_a, &salt).unwrap();
+            let (hash_b, key_b) = derive_keys(py, &password_b, &salt).unwrap();
 
-        assert_ne!(hash_a, hash_b);
-        assert_ne!(key_a, key_b);
+            assert_ne!(hash_a, hash_b);
+            assert_ne!(key_a, key_b);
+        });
     }
 
     #[test]
     fn derive_keys_empty_password() {
-        let password = [];
-        let salt = [0u8; Salt::RECOMMENDED_LENGTH];
+        Python::attach(|py| {
+            let password = [];
+            let salt = [0u8; Salt::RECOMMENDED_LENGTH];
 
-        derive_keys(&password, &salt).expect_err("Password empty");
+            derive_keys(py, &password, &salt).expect_err("Password empty");
+        });
     }
 
     #[test]
     fn derive_new_keys_empty_password() {
-        let password = [];
+        Python::attach(|py| {
+            let password = [];
 
-        derive_new_keys(&password).expect_err("Password empty");
+            derive_new_keys(py, &password).expect_err("Password empty");
+        });
     }
 }
